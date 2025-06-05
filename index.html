@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Web Counter</title>
+<style>
+  body { margin: 0; font-family: Arial, sans-serif; }
+  #canvasOutput { position: absolute; top: 40px; left: 0; }
+  #countDisplay { position: absolute; top: 0; left: 0; padding: 10px; background: rgba(0,0,0,0.5); color: #fff; font-size: 20px; }
+  #video { position: absolute; bottom: 10px; right: 10px; width: 160px; height: 120px; border: 2px solid #fff; }
+</style>
+</head>
+<body>
+<div id="countDisplay">Count: 0</div>
+<video id="video" width="640" height="480" autoplay muted playsinline></video>
+<canvas id="canvasOutput" width="640" height="480"></canvas>
+<script async src="https://docs.opencv.org/4.x/opencv.js"></script>
+<script>
+let video = document.getElementById('video');
+let canvas = document.getElementById('canvasOutput');
+let countDisplay = document.getElementById('countDisplay');
+let lineY = 350;
+let count = 0;
+let streaming = false;
+
+navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+  video.srcObject = stream;
+  video.play();
+  streaming = true;
+}).catch(err => console.error('Camera error:', err));
+
+let cap, src, gray, bg, diff, thresh, contours, hierarchy, kernel;
+
+function processVideo() {
+  if (!streaming) { requestAnimationFrame(processVideo); return; }
+  if (!cap) {
+    cap = new cv.VideoCapture(video);
+    src = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+    gray = new cv.Mat();
+    bg = new cv.Mat();
+    diff = new cv.Mat();
+    thresh = new cv.Mat();
+    contours = new cv.MatVector();
+    hierarchy = new cv.Mat();
+    kernel = cv.Mat.ones(3, 3, cv.CV_8U);
+  }
+  cap.read(src);
+  cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+
+  if (bg.empty()) { gray.copyTo(bg); requestAnimationFrame(processVideo); return; }
+
+  cv.absdiff(gray, bg, diff);
+  cv.threshold(diff, thresh, 50, 255, cv.THRESH_BINARY);
+  cv.morphologyEx(thresh, thresh, cv.MORPH_OPEN, kernel);
+
+  cv.findContours(thresh, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+  for (let i = 0; i < contours.size(); ++i) {
+    let cnt = contours.get(i);
+    let rect = cv.boundingRect(cnt);
+    if (rect.width * rect.height < 500) { cnt.delete(); continue; }
+    let cy = rect.y + rect.height / 2;
+    if (cy < lineY && cy + 5 >= lineY) { count++; }
+    cv.rectangle(src, new cv.Point(rect.x, rect.y), new cv.Point(rect.x + rect.width, rect.y + rect.height), [0,255,0,255], 2);
+    cnt.delete();
+  }
+
+  cv.line(src, new cv.Point(0, lineY), new cv.Point(src.cols, lineY), [255,0,0,255], 2);
+  cv.imshow('canvasOutput', src);
+  countDisplay.textContent = 'Count: ' + count;
+  requestAnimationFrame(processVideo);
+}
+
+cv['onRuntimeInitialized'] = () => { requestAnimationFrame(processVideo); };
+</script>
+</body>
+</html>

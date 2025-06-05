@@ -1,6 +1,41 @@
 We are creating a product counter for a powder-coating paint line. We specialize in sheet metal enclosures such as tool boxes, filter boxes, electrical enclosures, and some shelving / storage solutions.
-- The counter will have a ui with a primary monitor which may display various filters overlayed, and a bare cam monitor in the bottom right kind of like seeing your own cam in zoom or skype. 
+- The counter will have a ui with a primary monitor which may display various filters overlayed, and a bare cam monitor in the bottom right kind of like seeing your own cam in zoom or skype.
 - The counter will have a count at the top of the page, followed by the display, and below that will be the various settings.
 - We will experiment with contour detection, background canceling, various image cleanup methods, and eventually more advanced AI tools (perhaps yolo or coco?)
 - We will probably start with openCV solutions but open to various free tools
 - The tool will be geared toward running in the web browser, though future editions might be made for affordable edge compute such as rasberypi, esp32, nvidia jetson, or on a lightweight computer not in more powful or efficient ways than the browser.
+
+## Getting Started
+
+Install dependencies for the Python prototype:
+
+```bash
+pip install -r requirements.txt
+```
+
+Run the prototype (press `q` to exit):
+
+```bash
+python counter.py
+```
+
+This sample script captures frames from the default camera, performs basic background subtraction and contour detection, and displays the running count overlayed on the video feed.
+
+## Web Version
+
+`index.html` implements a simple counter using [OpenCV.js](https://docs.opencv.org/). It accesses the webcam in your browser and runs a basic contour detection algorithm.
+
+The processed feed fills the page while a small "raw" camera preview appears in
+the lower-right corner so you can monitor the unfiltered view.
+
+To try it locally, open the file directly in your browser or use Vercel's CLI:
+
+```bash
+# install the Vercel CLI if needed
+npm i -g vercel
+
+# serve locally
+vercel dev
+```
+
+Deploying to Vercel works out of the box because the repository now contains static files. After installing the CLI, run `vercel` and follow the prompts.
