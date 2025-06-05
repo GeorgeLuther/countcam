@@ -25,6 +25,9 @@ This sample script captures frames from the default camera, performs basic backg
 
 `index.html` implements a simple counter using [OpenCV.js](https://docs.opencv.org/). It accesses the webcam in your browser and runs a basic contour detection algorithm.
 
+The processed feed fills the page while a small "raw" camera preview appears in
+the lower-right corner so you can monitor the unfiltered view.
+
 To try it locally, open the file directly in your browser or use Vercel's CLI:
 
 ```bash
